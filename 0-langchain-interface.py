@@ -11,7 +11,6 @@ from langchain_openai import ChatOpenAI
 from langchain.agents import create_tool_calling_agent, AgentExecutor
 from langchain.tools import Tool
 from langchain_community.callbacks import get_openai_callback
-from langchain_groq import ChatGroq
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -20,7 +19,7 @@ load_dotenv()
 
 base_url = "http://localhost:5555/devmode/exampleApplication/privkey/session1/sse"
 params = {
-    "waitForAgents": 7,
+    "waitForAgents": 1,
     "agentId": "user_interaction_agent",
     "agentDescription": "You are user_interaction_agent, handling user instructions and coordinating testing tasks across agents"
 }
@@ -136,4 +135,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
