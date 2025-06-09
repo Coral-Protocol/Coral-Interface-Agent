@@ -37,6 +37,7 @@ Run the server
 </details>
 
 2. Agent Installation
+<details>
 
 In a new terminal clone the repository
 ```bash
@@ -55,6 +56,8 @@ Install dependencies from `pyproject.toml` using `uv`:
 ```bash
 uv sync
 ```
+
+</details>
 
 ## Configure Environment Variables
 Get the API Key:
