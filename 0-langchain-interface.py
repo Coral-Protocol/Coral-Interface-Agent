@@ -19,7 +19,7 @@ load_dotenv()
 
 base_url = "http://localhost:5555/devmode/exampleApplication/privkey/session1/sse"
 params = {
-    "waitForAgents": 1,
+    # "waitForAgents": 1,
     "agentId": "user_interaction_agent",
     "agentDescription": "You are user_interaction_agent, handling user instructions and coordinating testing tasks across agents"
 }
@@ -104,6 +104,8 @@ async def main():
                     coroutine=ask_human_tool,
                     description="Ask the user a question and wait for a response."
                 )]
+                tools_description = get_tools_description(tools)
+                print(tools)
                 logger.info(f"Tools Description:\n{get_tools_description(tools)}")
 
                 with get_openai_callback() as cb:
