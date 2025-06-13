@@ -8,7 +8,7 @@ User Interaction Agent acts as the main interface for coordinating user instruct
 ## Details
 - **Framework**: LangChain
 - **Tools used**: Coral MCP Tools, ask_human Tool (human-in-the-loop)
-- **AI model**: GPT-4o
+- **AI model**: GPT-4.1
 - **Date added**: June 4, 2025
 - **License**: MIT 
 
