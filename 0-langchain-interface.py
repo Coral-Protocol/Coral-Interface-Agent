@@ -85,9 +85,11 @@ async def create_interface_agent(client, tools):
 async def main():
     max_retries = 5
     retry_delay = 5  # seconds
+
     for attempt in range(max_retries):
+        client = None
         try:
-            async with MultiServerMCPClient(
+            client = MultiServerMCPClient(
                 connections={
                     "coral": {
                         "transport": "sse",
@@ -96,26 +98,32 @@ async def main():
                         "sse_read_timeout": 600,
                     }
                 }
-            ) as client:
-                logger.info(f"Connected to MCP server at {MCP_SERVER_URL}")
-                tools = client.get_tools() + [Tool(
+            )
+            logger.info(f"Initialized MultiServerMCPClient to {MCP_SERVER_URL}")
+
+            tools = await client.get_tools()
+
+            tools.append(
+                Tool(
                     name="ask_human",
                     func=None,
                     coroutine=ask_human_tool,
                     description="Ask the user a question and wait for a response."
-                )]
-                tools_description = get_tools_description(tools)
-                print(tools)
-                logger.info(f"Tools Description:\n{get_tools_description(tools)}")
+                )
+            )
+            logger.info(f"Tools Description:\n{get_tools_description(tools)}")
 
-                with get_openai_callback() as cb:
-                    agent_executor = await create_interface_agent(client, tools)
-                    await agent_executor.ainvoke({})
-                    logger.info(f"Token usage for this run:")
-                    logger.info(f"  Prompt Tokens: {cb.prompt_tokens}")
-                    logger.info(f"  Completion Tokens: {cb.completion_tokens}")
-                    logger.info(f"  Total Tokens: {cb.total_tokens}")
-                    logger.info(f"  Total Cost (USD): ${cb.total_cost:.6f}")
+            with get_openai_callback() as cb:
+                agent_executor = await create_interface_agent(client, tools)
+                await agent_executor.ainvoke({})
+                logger.info("Token usage:")
+                logger.info(f"  Prompt Tokens: {cb.prompt_tokens}")
+                logger.info(f"  Completion Tokens: {cb.completion_tokens}")
+                logger.info(f"  Total Tokens: {cb.total_tokens}")
+                logger.info(f"  Total Cost (USD): ${cb.total_cost:.6f}")
+
+            break
+
         except ClosedResourceError as e:
             logger.error(f"ClosedResourceError on attempt {attempt + 1}: {e}")
             if attempt < max_retries - 1:
@@ -125,6 +133,7 @@ async def main():
             else:
                 logger.error("Max retries reached. Exiting.")
                 raise
+
         except Exception as e:
             logger.error(f"Unexpected error on attempt {attempt + 1}: {e}")
             if attempt < max_retries - 1:
@@ -137,3 +146,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
