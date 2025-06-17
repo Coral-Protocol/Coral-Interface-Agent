@@ -19,7 +19,7 @@ load_dotenv()
 
 base_url = os.getenv("CORAL_SERVER_URL")
 params = {
-    # "waitForAgents": 1,
+    "waitForAgents": 1,
     "agentId": "user_interaction_agent",
     "agentDescription": "You are user_interaction_agent, handling user instructions and coordinating testing tasks across agents"
 }
