@@ -1,6 +1,6 @@
 ## [Interface Agent](https://github.com/Coral-Protocol/Coral-Interface-Agent)
 
-User Interaction Agent is the main interface for receiving user instructions, coordinating multi-agent tasks, and logging conversations via the terminal.
+User Interaction Agent is the main interface for receiving user instructions, coordinating multi-agent tasks, and logging conversations via the terminal
 
 ## Responsibility
 User Interaction Agent acts as the main interface for coordinating user instructions and managing multi-agent tasks. It interacts with the user via terminal and orchestrates requests among various agents, ensuring seamless workflow and conversation logging.
