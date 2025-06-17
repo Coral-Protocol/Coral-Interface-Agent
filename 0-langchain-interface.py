@@ -19,9 +19,9 @@ load_dotenv()
 
 base_url = os.getenv("CORAL_CONNECTION_URL")
 params = {
-    "waitForAgents": 1,
-    "agentId": "user_interaction_agent",
-    "agentDescription": "You are user_interaction_agent, handling user instructions and coordinating testing tasks across agents"
+    # "waitForAgents": 1,
+    # "agentId": "user_interaction_agent",
+    "agentDescription": "An agent that takes the user's input and interacts with other agents to fulfill the request",
 }
 query_string = urllib.parse.urlencode(params)
 MCP_SERVER_URL = f"{base_url}?{query_string}"
