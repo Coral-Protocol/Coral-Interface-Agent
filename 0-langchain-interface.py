@@ -35,12 +35,13 @@ def get_tools_description(tools):
 
 async def ask_human_tool(question: str) -> str:
     print(f"Agent asks: {question}")
+    load_dotenv(override=True)
     response = os.getenv("HUMAN_RESPONSE")
     if response is None:
-        logger.error("No HUMAN_RESPONSE found in .env file")
-        return "No response provided in .env file"
+        logger.error("No HUMAN_RESPONSE found in .env file, falling back to input")
+        response = input("Your response: ")
     return response
-    
+
 async def create_interface_agent(client, tools):
     tools_description = get_tools_description(tools)
     
