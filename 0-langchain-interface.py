@@ -17,10 +17,10 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-base_url = os.getenv("CORAL_SERVER_URL")
+base_url = os.getenv("CORAL_CONNECTION_URL")
 params = {
     # "waitForAgents": 1,
-    "agentId": "user_interaction_agent",
+    # "agentId": "user_interaction_agent", # this gets passed in as part of the connection url since the sessions dictate the agent ID
     "agentDescription": "You are user_interaction_agent, handling user instructions and coordinating testing tasks across agents"
 }
 query_string = urllib.parse.urlencode(params)
