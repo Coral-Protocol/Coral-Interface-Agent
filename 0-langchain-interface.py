@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-base_url = os.getenv("CORAL_CONNECTION_URL")
+base_url = os.getenv("CORAL_SERVER_URL")
 params = {
     # "waitForAgents": 1,
     "agentId": "user_interaction_agent",
