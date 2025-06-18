@@ -13,6 +13,6 @@ COPY . .
 
 RUN uv sync --no-dev
 
-EXPOSE 3001 5555
+EXPOSE 5555
 
 CMD ["uv", "run", "python", "0-langchain-interface.py"]

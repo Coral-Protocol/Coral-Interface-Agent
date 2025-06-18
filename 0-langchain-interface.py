@@ -20,7 +20,7 @@ load_dotenv()
 base_url = os.getenv("CORAL_CONNECTION_URL")
 params = {
     # "waitForAgents": 1,
-    # "agentId": "user_interaction_agent", # this gets passed in as part of the connection url since the sessions dictate the agent ID
+    "agentId": "user_interaction_agent",
     "agentDescription": "You are user_interaction_agent, handling user instructions and coordinating testing tasks across agents"
 }
 query_string = urllib.parse.urlencode(params)
