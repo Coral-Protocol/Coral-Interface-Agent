@@ -38,8 +38,18 @@ def get_tools_description(tools):
 
 async def ask_human_tool(question: str) -> str:
     print(f"Agent asks: {question}")
-    return input("Your response: ")
-
+    runtime = os.getenv("CORAL_ORCHESTRATION_RUNTIME", "devmode")
+    
+    if runtime == "docker":
+        load_dotenv(override=True)
+        response = os.getenv("HUMAN_RESPONSE")
+        if response is None:
+            logger.error("No HUMAN_RESPONSE coming from Coral Server Orchestrator")
+    else:
+        response = input("Your response: ")
+    
+    return response
+    
 async def create_interface_agent(client, tools):
     tools_description = get_tools_description(tools)
     
