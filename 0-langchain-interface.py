@@ -81,7 +81,7 @@ async def create_interface_agent(client, tools):
     ])
 
     model = ChatOpenAI(
-        model="gpt-4.1-2025-04-14",
+        model="gpt-4.1-mini-2025-04-14",
         api_key=os.getenv("OPENAI_API_KEY"),
         temperature=0.3,
         max_tokens=32768
@@ -93,7 +93,7 @@ async def create_interface_agent(client, tools):
     )'''
 
     agent = create_tool_calling_agent(model, tools, prompt)
-    return AgentExecutor(agent=agent, tools=tools, max_iterations=100 ,verbose=True, stream_runnable=False)
+    return AgentExecutor(agent=agent, tools=tools, max_iterations=None ,verbose=True, stream_runnable=False)
 
 async def main():
     max_retries = 5
@@ -126,16 +126,15 @@ async def main():
             )
             logger.info(f"Tools Description:\n{get_tools_description(tools)}")
 
-            with get_openai_callback() as cb:
-                agent_executor = await create_interface_agent(client, tools)
-                await agent_executor.ainvoke({})
-                logger.info("Token usage:")
-                logger.info(f"  Prompt Tokens: {cb.prompt_tokens}")
-                logger.info(f"  Completion Tokens: {cb.completion_tokens}")
-                logger.info(f"  Total Tokens: {cb.total_tokens}")
-                logger.info(f"  Total Cost (USD): ${cb.total_cost:.6f}")
+            # with get_openai_callback() as cb:
+            agent_executor = await create_interface_agent(client, tools)
+            await agent_executor.ainvoke({})
+                # logger.info("Token usage:")
+                # logger.info(f"  Prompt Tokens: {cb.prompt_tokens}")
+                # logger.info(f"  Completion Tokens: {cb.completion_tokens}")
+                # logger.info(f"  Total Tokens: {cb.total_tokens}")
+                # logger.info(f"  Total Cost (USD): ${cb.total_cost:.6f}")
 
-            break
 
         except ClosedResourceError as e:
             logger.error(f"ClosedResourceError on attempt {attempt + 1}: {e}")
