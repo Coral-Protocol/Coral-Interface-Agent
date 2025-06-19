@@ -17,15 +17,16 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-base_url = os.getenv("CORAL_CONNECTION_URL")
+base_url = os.getenv("CORAL_SSE_URL")
+agentID = os.getenv("CORAL_AGENT_ID")
+
 params = {
     # "waitForAgents": 1,
-    # "agentId": "user_interaction_agent",
+    "agentId": agentID,
     "agentDescription": "An agent that takes the user's input and interacts with other agents to fulfill the request",
 }
 query_string = urllib.parse.urlencode(params)
 MCP_SERVER_URL = f"{base_url}?{query_string}"
-AGENT_NAME = "user_interaction_agent"
 
 def get_tools_description(tools):
     return "\n".join(
