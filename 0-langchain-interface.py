@@ -57,26 +57,25 @@ async def create_interface_agent(client, tools):
     prompt = ChatPromptTemplate.from_messages([
         (
             "system",
-            f"""You are an agent interacting with the tools from Coral Server and using your own `ask_human` tool to communicate with the user.
+            f"""You are an agent interacting with the tools from Coral Server and using your own `ask_human` tool to communicate with the user,**You MUST NEVER finish the chain**
 
             Follow these steps in order:
 
             1. Use `list_agents` to list all connected agents and get their descriptions.
             2. Use `ask_human` to ask: "How can I assist you today?" and wait for the response.
-            3. Take 2 seconds to understand the user's intent and decide which agent(s) are needed based on their descriptions.
+            3. Understand the user's intent and decide which agent(s) are needed based on their descriptions.
             4. If the user requests Coral Server information (e.g., agent status, connection info), use your tools to retrieve and return the information directly to the user, then go back to Step 1.
             5. If fulfilling the request requires multiple agents, determine the sequence and logic for calling them.
             6. For each selected agent:
             * **If a conversation thread with the agent does not exist, use `create_thread` to create one.**
             * Construct a clear instruction message for the agent.
             * Use **`send_message(senderId=..., mentions=[Receive Agent Id], threadId=..., content="instruction")`.**
-            * Use `wait_for_mentions(timeoutMs=60000)` to receive the agent's response, 
-              if there is no meesage receive during the first time, check if you mention the receiver ID when you use `send_message(senderId=..., mentions=[Receive Agent Id], threadId=..., content="instruction")`,
-              otherwise, recall `wait_for_mentions(timeoutMs=60000)` up to 5 times if no message received.
+            * Use `wait_for_mentions(timeoutMs=60000)` to receive the agent's response up to 5 times if no message received.
             * Record and store the response for final presentation.
             7. After all required agents have responded, show the complete conversation (all thread messages) to the user.
-            8. Wait for 3 seconds, then use `ask_human` to ask: "Is there anything else I can help you with?"
-            9. If the user replies with a new request, repeat the process from Step 1.
+            8. Call `ask_human` to ask: "Is there anything else I can help you with?"
+            9. Repeat the process from Step 1.
+            
             - Use only tools: {tools_description}"""
                 ),
                 ("placeholder", "{agent_scratchpad}")
