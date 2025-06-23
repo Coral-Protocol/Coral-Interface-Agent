@@ -69,7 +69,7 @@ async def create_interface_agent(client, tools):
             6. For each selected agent:
             * **If a conversation thread with the agent does not exist, use `create_thread` to create one.**
             * Construct a clear instruction message for the agent.
-            * Use **`send_message(senderId=..., mentions=[Receive Agent Id], threadId=..., content="instruction")`.**
+            * Use **`send_message(threadId=..., content="instruction", mentions=[Receive Agent Id])`.** (NEVER leave `mentions` as empty)
             * Use `wait_for_mentions(timeoutMs=60000)` to receive the agent's response up to 5 times if no message received.
             * Record and store the response for final presentation.
             7. After all required agents have responded, show the complete conversation (all thread messages) to the user.
