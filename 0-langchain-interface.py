@@ -25,6 +25,7 @@ params = {
     # "waitForAgents": 1,
     "agentId": agentID,
     "agentDescription": "An agent that takes the user's input and interacts with other agents to fulfill the request",
+    "maxWaitForMentionsTimeout": 4000,
 }
 
 query_string = urllib.parse.urlencode(params)
@@ -57,12 +58,12 @@ async def create_interface_agent(client, tools):
     prompt = ChatPromptTemplate.from_messages([
         (
             "system",
-            f"""You are an agent interacting with the tools from Coral Server and using your own `ask_human` tool to communicate with the user,**You MUST NEVER finish the chain**
+            f"""You are an agent interacting with the tools from Coral Server and using your own `user_input` tool to communicate with the user,**You MUST NEVER finish the chain**
 
             Follow these steps in order:
 
             1. Use `list_agents` to list all connected agents and get their descriptions.
-            2. Use `ask_human` to ask: "How can I assist you today?" and wait for the response.
+            2. Use `user_input` to ask: "How can I assist you today?" and wait for the response.
             3. Understand the user's intent and decide which agent(s) are needed based on their descriptions.
             4. If the user requests Coral Server information (e.g., agent status, connection info), use your tools to retrieve and return the information directly to the user, then go back to Step 1.
             5. If fulfilling the request requires multiple agents, determine the sequence and logic for calling them.
@@ -73,7 +74,7 @@ async def create_interface_agent(client, tools):
             * Use `wait_for_mentions(timeoutMs=60000)` to receive the agent's response up to 5 times if no message received.
             * Record and store the response for final presentation.
             7. After all required agents have responded, show the complete conversation (all thread messages) to the user.
-            8. Call `ask_human` to ask: "Is there anything else I can help you with?"
+            8. Call `user_input` to ask: "Is there anything else I can help you with?"
             9. Repeat the process from Step 1.
             
             - Use only tools: {tools_description}"""
@@ -93,7 +94,7 @@ async def create_interface_agent(client, tools):
     return AgentExecutor(agent=agent, tools=tools, verbose=True)
 
 async def main():
-    max_retries = 3
+    max_retries = 30
     for attempt in range(max_retries):
         try:
             async with MultiServerMCPClient(
@@ -107,12 +108,13 @@ async def main():
                 }
             ) as client:
                 logger.info(f"Connected to MCP server at {MCP_SERVER_URL}")
-                tools = client.get_tools() + [Tool(
-                    name="ask_human",
-                    func=None,
-                    coroutine=ask_human_tool,
-                    description="Ask the user a question and wait for a response."
-                )]
+                tools = client.get_tools() 
+                # + [Tool(
+                #     name="ask_human",
+                #     func=None,
+                #     coroutine=ask_human_tool,
+                #     description="Ask the user a question and wait for a response."
+                # )]
                 # logger.info(f"Tools Description:\n{get_tools_description(tools)}")
                 await (await create_interface_agent(client, tools)).ainvoke({})
         except ClosedResourceError as e:
