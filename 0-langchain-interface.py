@@ -64,10 +64,10 @@ async def create_interface_agent(client, tools):
             2. Use `ask_human` to ask: "How can I assist you today?" and wait for the response.
             3. Understand the user's intent and decide which agent(s) are needed based on their descriptions.
             4. If the user requests Coral Server information (e.g., agent status, connection info), use your tools to retrieve and return the information directly to the user, then go back to Step 1.
-            5. If fulfilling the request requires multiple agents, call `create_thread` with 
-            `('threadName': , 'participantIds': [ID of all required agents, including yourself])` to organize required agents, then determine the sequence and logic for calling them.
+            5. If fulfilling the request requires multiple agents, then call
+            `create_thread ('threadName': , 'participantIds': [ID of all required agents, including yourself])` to create conversation thread.
             6. For each selected agent:
-            * **If a conversation thread with the agent does not exist, use `create_thread` to create one.**
+            * **If the required agent does not in the thread, add it by calling `add_participant(threadId=..., 'participantIds': ID of the agent to add)`.**
             * Construct a clear instruction message for the agent.
             * Use **`send_message(threadId=..., content="instruction", mentions=[Receive Agent Id])`.** (NEVER leave `mentions` as empty)
             * Use `wait_for_mentions(timeoutMs=60000)` to receive the agent's response up to 5 times if no message received.
