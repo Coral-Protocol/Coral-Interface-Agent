@@ -12,46 +12,6 @@ User Interaction Agent acts as the main interface for coordinating user instruct
 - **Date added**: June 4, 2025
 - **License**: MIT
 
-## Use the Agent in Orchestration
-You will need to have API keys from [OpenAI](https://platform.openai.com/api-keys).
-
-### Executable Agent Definition 
-```yaml
-coral-interface:
-  options:
-    - name: "OPENAI_API_KEY" 
-      type: "string"
-      description: "OpenAI Key"
-  runtime:
-    type: "executable"
-    command:
-      - "bash"
-      - "-c"
-      - "cd ../Coral-Interface-Agent && uv sync && uv run python 0-langchain-interface.py"
-    environment:
-      - name: "OPENAI_API_KEY"
-        from: "OPENAI_API_KEY" 
-```
-### Docker Agent Definition 
-
-```yaml
-
-  interface:
-    options:
-      - name: "OPENAI_API_KEY"
-        type: "string"
-        description: "OpenAI API Key"
-      - name: "HUMAN_RESPONSE"
-        type: "string"
-        description: "Human response to be used in the interface agent"
-
-    runtime:
-      type: "docker"
-      image: "sd2879/coral-interface-agent:latest"
-    environment:
-      - name: "OPENAI_API_KEY"
-        from: "OPENAI_API_KEY" 
-```
 
 ## Use the Agent in Dev Mode
 
