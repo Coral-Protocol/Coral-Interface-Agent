@@ -65,7 +65,7 @@ async def create_interface_agent(client, tools):
             3. Understand the user's intent and decide which agent(s) are needed based on their descriptions.
             4. If the user requests Coral Server information (e.g., agent status, connection info), use your tools to retrieve and return the information directly to the user, then go back to Step 1.
             5. If fulfilling the request requires multiple agents, call `create_thread` with 
-            `('threadName': , 'participantIds': [ID of required agents]}` to organize required agents, then determine the sequence and logic for calling them.
+            `('threadName': , 'participantIds': [ID of required agents])` to organize required agents, then determine the sequence and logic for calling them.
             6. For each selected agent:
             * **If a conversation thread with the agent does not exist, use `create_thread` to create one.**
             * Construct a clear instruction message for the agent.
