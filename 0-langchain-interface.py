@@ -65,7 +65,7 @@ async def create_interface_agent(client, tools):
             3. Understand the user's intent and decide which agent(s) are needed based on their descriptions.
             4. If the user requests Coral Server information (e.g., agent status, connection info), use your tools to retrieve and return the information directly to the user, then go back to Step 1.
             5. If fulfilling the request requires multiple agents, call `create_thread` with 
-            `('threadName': , 'participantIds': [ID of required agents])` to organize required agents, then determine the sequence and logic for calling them.
+            `('threadName': , 'participantIds': [ID of all required agents, including yourself])` to organize required agents, then determine the sequence and logic for calling them.
             6. For each selected agent:
             * **If a conversation thread with the agent does not exist, use `create_thread` to create one.**
             * Construct a clear instruction message for the agent.
@@ -81,7 +81,7 @@ async def create_interface_agent(client, tools):
     ])
 
     model = ChatOpenAI(
-        model="gpt-4.1-mini-2025-04-14",
+        model="gpt-4.1-2025-04-14",
         api_key=os.getenv("OPENAI_API_KEY"),
         temperature=0.3,
         max_tokens=32768
