@@ -17,6 +17,10 @@ User Interaction Agent acts as the main interface for coordinating user instruct
 ### 1. Executable Agent Definition
 
 ```bash
+# IN YOUR TERMINAL FIRST DO BELOW COMMANDS:
+#chmod +x /PATH/TO/YOUR/PROJECT
+# export PROJECT_DIR="/PATH/TO/YOUR/PROJECT"
+
 applications:
   - id: "app"
     name: "Default Application"
@@ -34,13 +38,7 @@ registry:
         description: "API key for the service"
     runtime:
       type: "executable"
-
-      
-      # IN YOUR TERMINAL FIRST DO BELOW COMMANDS:
-
-      #chmod +x /PATH/TO/YOUR/PROJECT
-      #export PROJECT_DIR="/PATH/TO/YOUR/PROJECT"
-      command: ["bash", "-c", "/PATH/TO/YOUR/PROJECT/Coral-Interface-Agent/run_agent.sh 0-langchain-interface.py"]
+      command: ["bash", "-c", "${PROJECT_DIR}/run_agent.sh main.py"]
       
       environment:
         - name: "API_KEY"
