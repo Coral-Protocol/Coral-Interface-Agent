@@ -1,20 +1,48 @@
 #!/bin/bash
 
-# Cross-platform shell script to set up a virtual environment and run a specified Python script
-# Usage: ./run_agent.sh <python_script_path>
-
-# Check if Python script path is provided
+# Check for exactly one argument
 if [ $# -ne 1 ]; then
   echo "Usage: $0 <python_script_path>" >&2
   exit 1
 fi
 PYTHON_SCRIPT="$1"
 
-# Determine project directory from script location
+# Determine script directory
 SCRIPT_DIR=$(dirname "$(realpath "$0" 2>/dev/null || readlink -f "$0" 2>/dev/null || echo "$0")")
-PROJECT_DIR="$SCRIPT_DIR"
+
+# Ensure write permissions for script directory
+chmod u+w "$SCRIPT_DIR" || {
+  echo "Error: Could not set write permissions for $SCRIPT_DIR" >&2
+  exit 1
+}
+
+# Create temporary project directory
+TEMP_DIR="$SCRIPT_DIR/.temp/$(date +%s)-$$"
+mkdir -p "$TEMP_DIR" || {
+  echo "Error: Could not create temporary directory $TEMP_DIR" >&2
+  exit 1
+}
+chmod u+w "$TEMP_DIR" || {
+  echo "Error: Could not set write permissions for $TEMP_DIR" >&2
+  exit 1
+}
+PROJECT_DIR="$TEMP_DIR"
 echo "Project directory: $PROJECT_DIR"
 echo "Python script to run: $PYTHON_SCRIPT"
+
+# Copy files to project directory, excluding files and folders starting with .
+shopt -s dotglob
+for item in "$SCRIPT_DIR"/*; do
+  basename=$(basename "$item")
+  if [[ "$basename" == .* ]]; then
+    continue
+  fi
+  cp -r "$item" "$PROJECT_DIR"/ || {
+    echo "Error: Failed to copy $item to $PROJECT_DIR" >&2
+    exit 1
+  }
+done
+shopt -u dotglob
 
 # Change to project directory
 cd "$PROJECT_DIR" || {
@@ -22,7 +50,7 @@ cd "$PROJECT_DIR" || {
   exit 1
 }
 
-# Remove .venv if it exists, otherwise do nothing
+# Remove existing virtual environment if present
 if [ -d ".venv" ]; then
   echo "Removing existing .venv directory..."
   rm -rf ".venv"
@@ -30,67 +58,54 @@ else
   echo ".venv directory not present, continuing..."
 fi
 
-# Detect operating system
-OS=$(uname -s)
-case "$OS" in
-  Linux*) PLATFORM="linux" ;;
-  Darwin*) PLATFORM="macos" ;;
-  CYGWIN*|MINGW*|MSYS*) PLATFORM="windows" ;;
-  *) echo "Error: Unsupported OS: $OS" >&2; exit 1 ;;
-esac
-
-# Set virtual environment paths
-if [ "$PLATFORM" = "windows" ]; then
-  VENV_DIR="$PROJECT_DIR/.venv/Scripts"
-  VENV_PYTHON="$VENV_DIR/python.exe"
-  UV_EXEC="$VENV_DIR/uv.exe"
-  PYTHON_SCRIPT=$(echo "$PYTHON_SCRIPT" | sed 's|/|\\|g')
-else
-  VENV_DIR="$PROJECT_DIR/.venv/bin"
-  VENV_PYTHON="$VENV_DIR/python"
-  UV_EXEC="$VENV_DIR/uv"
-fi
-
-# Validate Python script exists
-if [ ! -f "$PROJECT_DIR/$PYTHON_SCRIPT" ]; then
-  echo "Error: Python script $PYTHON_SCRIPT not found in $PROJECT_DIR" >&2
+# Install uv locally
+echo "Installing uv locally..."
+if ! curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=$(pwd) sh; then
+  echo "Error: Failed to install uv" >&2
   exit 1
 fi
 
-# Create virtual environment if it doesn't exist
-if [ ! -d "$PROJECT_DIR/.venv" ]; then
-  if [ ! -w "$PROJECT_DIR" ]; then
-    echo "Error: No write permission in $PROJECT_DIR. Cannot create .venv directory." >&2
-    exit 1
-  fi
-  echo "Creating virtual environment in $PROJECT_DIR/.venv..."
-  python3 -m venv .venv 2>&1 | tee "$PROJECT_DIR/venv_creation.log" || {
-    echo "Error: Failed to create virtual environment. See venv_creation.log for details." >&2
-    exit 1
-  }
+# Verify uv is available
+if ! command -v uv >/dev/null 2>&1; then
+  echo "Error: uv command not found after installation" >&2
+  exit 1
 fi
 
-# Install uv in the virtual environment if not present
-if ! "$VENV_PYTHON" -m uv --version >/dev/null 2>&1; then
-  echo "Installing uv in virtual environment..."
-  pip install uv || {
-    echo "Error: Failed to install uv" >&2
-    exit 1
-  }
+# Create virtual environment
+echo "Creating new virtual environment..."
+uv venv || {
+  echo "Error: Failed to create virtual environment" >&2
+  exit 1
+}
+if [ ! -d ".venv" ]; then
+  echo "Error: Virtual environment directory .venv not found" >&2
+  exit 1
 fi
 
-# Run uv sync
-echo "Running uv sync in $PROJECT_DIR..."
-uv sync || {
-  echo "Error: uv sync failed" >&2
+# Activate the virtual environment
+echo "Activating the virtual environment..."
+source .venv/bin/activate || {
+  echo "Error: Failed to activate virtual environment" >&2
   exit 1
 }
 
-# Run the Python script with uv
+# Sync dependencies using uv
+echo "Syncing dependencies with uv..."
+if [ -f "pyproject.toml" ] || [ -f "requirements.txt" ]; then
+  uv sync || {
+    echo "Error: Failed to sync dependencies with uv" >&2
+    exit 1
+  }
+else
+  echo "Warning: No pyproject.toml or requirements.txt found, skipping dependency sync" >&2
+fi
+
+# Run the specified Python script
 echo "Running $PYTHON_SCRIPT..."
 uv run "$PYTHON_SCRIPT" || {
   echo "Error: Failed to run $PYTHON_SCRIPT" >&2
   exit 1
 }
 
-echo "Script executed successfully."
+# Remove the temporary project directory on exit
+rm -rf "$PROJECT_DIR"
