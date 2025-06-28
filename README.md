@@ -12,7 +12,50 @@ User Interaction Agent acts as the main interface for coordinating user instruct
 - **Date added**: June 4, 2025
 - **License**: MIT
 
+## Use the Agent in Orchestration
 
+### 1. Executable Agent Definition
+
+```bash
+applications:
+  - id: "app"
+    name: "Default Application"
+    description: "Default application for testing"
+    privacyKeys:
+      - "default-key"
+      - "public"
+      - "priv"
+
+registry:
+  interface:
+    options:
+      - name: "API_KEY"
+        type: "string"
+        description: "API key for the service"
+    runtime:
+      type: "executable"
+
+      
+      # IN YOUR TERMINAL FIRST DO BELOW COMMANDS:
+
+      # For Linux or macOS, use the following command:
+      #chmod +x /PATH/TO/YOUR/PROJECT
+      #export PROJECT_DIR="/PATH/TO/YOUR/PROJECT"
+      command: ["bash", "-c", "/PATH/TO/YOUR/PROJECT/Coral-Interface-Agent/run_agent.sh 0-langchain-interface.py"]
+
+      # For Windows, use the following command:
+      #$env:PROJECT_DIR = "path\to\your\project"
+      #$env:PROJECT_DIR = "C:\my_folder\windows_projects\coral\Coral-Pandas-Agent"
+      # command: ["powershell","-ExecutionPolicy", "Bypass", "-File", "${PROJECT_DIR}/run_agent.ps1","langchain-pandas-agent.py"]
+      
+      environment:
+        - name: "API_KEY"
+          from: "API_KEY"
+        - name: "MODEL"
+          value: "gpt-4.1"
+        - name: "LLM_MODEL_PROVIDER"
+          value: "openai"
+```
 ## Use the Agent in Dev Mode
 
 ### 1. Clone & Install Dependencies
