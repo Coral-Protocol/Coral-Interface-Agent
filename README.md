@@ -53,7 +53,7 @@ registry:
           value: "openai"
 ```
 
-For Window, create a powershell command and run:
+For Windows, create a powershell command and run:
 
 ```bash
 command: ["powershell","-ExecutionPolicy", "Bypass", "-File", "${PROJECT_DIR}/run_agent.ps1","main.py"]
