@@ -18,6 +18,8 @@ User Interaction Agent acts as the main interface for coordinating user instruct
 
 <details>
 
+For Linux or MAC:
+
 ```bash
 # IN YOUR TERMINAL FIRST DO BELOW COMMANDS:
 #chmod +x /PATH/TO/YOUR/PROJECT
@@ -49,6 +51,12 @@ registry:
           value: "gpt-4.1"
         - name: "LLM_MODEL_PROVIDER"
           value: "openai"
+```
+
+For Window do create a powershell command and run:
+
+```bash
+command: ["powershell","-ExecutionPolicy", "Bypass", "-File", "${PROJECT_DIR}/run_agent.ps1","main.py"]
 ```
 
 </details>
