@@ -38,15 +38,9 @@ registry:
       
       # IN YOUR TERMINAL FIRST DO BELOW COMMANDS:
 
-      # For Linux or macOS, use the following command:
       #chmod +x /PATH/TO/YOUR/PROJECT
       #export PROJECT_DIR="/PATH/TO/YOUR/PROJECT"
       command: ["bash", "-c", "/PATH/TO/YOUR/PROJECT/Coral-Interface-Agent/run_agent.sh 0-langchain-interface.py"]
-
-      # For Windows, use the following command:
-      #$env:PROJECT_DIR = "path\to\your\project"
-      #$env:PROJECT_DIR = "C:\my_folder\windows_projects\coral\Coral-Pandas-Agent"
-      # command: ["powershell","-ExecutionPolicy", "Bypass", "-File", "${PROJECT_DIR}/run_agent.ps1","langchain-pandas-agent.py"]
       
       environment:
         - name: "API_KEY"
