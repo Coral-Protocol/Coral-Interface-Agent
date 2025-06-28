@@ -22,8 +22,6 @@ For Linux or MAC:
 
 ```bash
 # PROJECT_DIR="/PATH/TO/YOUR/PROJECT"
-# IN TERMINAL:
-# chmod +x /PATH/TO/YOUR/PROJECT
 
 applications:
   - id: "app"
