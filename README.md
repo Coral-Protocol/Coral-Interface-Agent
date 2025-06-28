@@ -16,6 +16,8 @@ User Interaction Agent acts as the main interface for coordinating user instruct
 
 ### 1. Executable Agent Definition
 
+<details>
+
 ```bash
 # IN YOUR TERMINAL FIRST DO BELOW COMMANDS:
 #chmod +x /PATH/TO/YOUR/PROJECT
@@ -48,6 +50,9 @@ registry:
         - name: "LLM_MODEL_PROVIDER"
           value: "openai"
 ```
+
+</details>
+
 ## Use the Agent in Dev Mode
 
 ### 1. Clone & Install Dependencies
