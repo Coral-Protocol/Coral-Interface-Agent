@@ -21,9 +21,9 @@ User Interaction Agent acts as the main interface for coordinating user instruct
 For Linux or MAC:
 
 ```bash
-# IN YOUR TERMINAL FIRST DO BELOW COMMANDS:
-#chmod +x /PATH/TO/YOUR/PROJECT
-# export PROJECT_DIR="/PATH/TO/YOUR/PROJECT"
+# PROJECT_DIR="/PATH/TO/YOUR/PROJECT"
+# IN TERMINAL:
+# chmod +x /PATH/TO/YOUR/PROJECT
 
 applications:
   - id: "app"
