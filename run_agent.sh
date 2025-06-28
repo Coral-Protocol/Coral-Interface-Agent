@@ -65,6 +65,8 @@ if ! curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=$(pwd) sh; 
   exit 1
 fi
 
+export PATH="$PROJECT_DIR:$PATH"
+
 # Verify uv is available
 if ! command -v uv >/dev/null 2>&1; then
   echo "Error: uv command not found after installation" >&2
