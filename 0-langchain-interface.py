@@ -1,18 +1,15 @@
-import asyncio
-import os
-import json
-import logging
 import urllib.parse
 from dotenv import load_dotenv
-from anyio import ClosedResourceError
-from langchain_mcp_adapters.client import MultiServerMCPClient
+import os, json, asyncio, traceback
+from langchain.chat_models import init_chat_model
 from langchain.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI
+from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain.agents import create_tool_calling_agent, AgentExecutor
 from langchain.tools import Tool
-from langchain_community.callbacks import get_openai_callback
+import logging
+import traceback
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 load_dotenv()
@@ -20,15 +17,12 @@ load_dotenv()
 base_url = os.getenv("CORAL_SSE_URL")
 agentID = os.getenv("CORAL_AGENT_ID")
 
-params = {
-    # "waitForAgents": 1,
+coral_params = {
     "agentId": agentID,
-    "agentDescription": "An agent that takes the user's input and interacts with other agents to fulfill the request",
+    "agentDescription": "An agent that takes the user's input and interacts with other agents to fulfill the request"
 }
 
-query_string = urllib.parse.urlencode(params)
-MCP_SERVER_URL = f"{base_url}?{query_string}"
-AGENT_NAME = "user_interaction_agent"
+query_string = urllib.parse.urlencode(coral_params)
 
 def get_tools_description(tools):
     return "\n".join(
@@ -38,124 +32,119 @@ def get_tools_description(tools):
 
 async def ask_human_tool(question: str) -> str:
     print(f"Agent asks: {question}")
-    runtime = os.getenv("CORAL_ORCHESTRATION_RUNTIME", "devmode")
-    
-    if runtime == "docker":
-        load_dotenv(override=True)
-        response = os.getenv("HUMAN_RESPONSE")
-        if response is None:
-            logger.error("No HUMAN_RESPONSE coming from Coral Server Orchestrator")
-    else:
-        response = input("Your response: ")
-    
+    response = input("Your response: ")
     return response
+
+async def create_agent(coral_tools, agent_tools, runtime):
+    coral_tools_description = get_tools_description(coral_tools)
     
-async def create_interface_agent(client, tools):
-    tools_description = get_tools_description(tools)
-    
+    if runtime == "docker" or runtime == "executable":
+        agent_tools_for_description = [
+            tool for tool in coral_tools if tool.name in agent_tools
+        ]
+        agent_tools_description = get_tools_description(agent_tools_for_description)
+        combined_tools = coral_tools + agent_tools_for_description
+        user_interaction_tool = "request_question"
+        print(agent_tools_description)
+    else:
+        # For other runtimes (e.g., devmode), agent_tools is a list of Tool objects
+        agent_tools_description = get_tools_description(agent_tools)
+        combined_tools = coral_tools + agent_tools
+        user_interaction_tool = "ask_human"
+
     prompt = ChatPromptTemplate.from_messages([
         (
             "system",
-            f"""You are an agent interacting with the tools from Coral Server and using your own `ask_human` tool to communicate with the user,**You MUST NEVER finish the chain**
+            f"""You are an agent interacting with the tools from Coral Server and using your own `{user_interaction_tool}` tool to communicate with the user. **You MUST NEVER finish the chain**
 
             Follow these steps in order:
-
-            1. Use `list_agents` to list all connected agents and get their descriptions.
-            2. Use `ask_human` to ask: "How can I assist you today?" and wait for the response.
+            1. Use tool `{user_interaction_tool}` to ask: "How can I assist you today?" and wait for the response.
+            2. Use `list_agents` to list all connected agents and get their descriptions.
             3. Understand the user's intent and decide which agent(s) are needed based on their descriptions.
             4. If the user requests Coral Server information (e.g., agent status, connection info), use your tools to retrieve and return the information directly to the user, then go back to Step 1.
             5. If fulfilling the request requires multiple agents, then call
             `create_thread ('threadName': , 'participantIds': [ID of all required agents, including yourself])` to create conversation thread.
             6. For each selected agent:
-            * **If the required agent does not in the thread, add it by calling `add_participant(threadId=..., 'participantIds': ID of the agent to add)`.**
+            * **If the required agent is not in the thread, add it by calling `add_participant(threadId=..., 'participantIds': ID of the agent to add)`.**
             * Construct a clear instruction message for the agent.
             * Use **`send_message(threadId=..., content="instruction", mentions=[Receive Agent Id])`.** (NEVER leave `mentions` as empty)
             * Use `wait_for_mentions(timeoutMs=60000)` to receive the agent's response up to 5 times if no message received.
             * Record and store the response for final presentation.
-            7. After all required agents have responded, show the complete conversation (all thread messages) to the user.
-            8. Call `ask_human` to ask: "Is there anything else I can help you with?"
-            9. Repeat the process from Step 1.
+            7. After all required agents have responded, take 2 seconds and think about the content to ensure you have executed the instruction to the best of your ability and the tools. Make this your response as "answer".
+            9. Always respond back to the user with the "answer" or error occurred even if you have no answer or error.
+            10. Repeat the process from Step 1.
             
-            - Use only tools: {tools_description}"""),
+            These are the list of coral tools: {coral_tools_description}
+            These are the list of agent tools: {agent_tools_description}"""
+        ),
         ("placeholder", "{agent_scratchpad}")
     ])
+    print(prompt)
 
-    model = ChatOpenAI(
-        model="gpt-4.1-2025-04-14",
-        api_key=os.getenv("OPENAI_API_KEY"),
+    model = init_chat_model(
+        model=os.getenv("MODEL"),
+        model_provider=os.getenv("LLM_MODEL_PROVIDER"),
+        api_key=os.getenv("API_KEY"),
         temperature=0.3,
-        max_tokens=32768
+        max_tokens=16000
     )
-
-    '''model = ChatGroq(
-        model="llama-3.3-70b-versatile",
-        temperature=0.3
-    )'''
-
-    agent = create_tool_calling_agent(model, tools, prompt)
-    return AgentExecutor(agent=agent, tools=tools, max_iterations=None ,verbose=True, stream_runnable=False)
+    agent = create_tool_calling_agent(model, combined_tools, prompt)
+    return AgentExecutor(agent=agent, tools=combined_tools, verbose=True)
 
 async def main():
-    max_retries = 5
-    retry_delay = 5  # seconds
+    CORAL_SERVER_URL = f"{base_url}?{query_string}"
+    logger.info(f"Connecting to Coral Server: {CORAL_SERVER_URL}")
 
-    for attempt in range(max_retries):
-        client = None
+    client = MultiServerMCPClient(
+        connections={
+            "coral": {
+                "transport": "sse",
+                "url": CORAL_SERVER_URL,
+                "timeout": 600,
+                "sse_read_timeout": 600,
+            }
+        }
+    )
+    logger.info("Coral Server Connection Established")
+
+    coral_tools = await client.get_tools(server_name="coral")
+    logger.info(f"Coral tools count: {len(coral_tools)}")
+
+    runtime = os.getenv("CORAL_ORCHESTRATION_RUNTIME", "devmode")
+    
+    if runtime == "docker" or runtime == "executable":
+        required_tools = ["request-question", "answer-question"]
+        available_tools = [tool.name for tool in coral_tools]
+
+        for tool_name in required_tools:
+            if tool_name not in available_tools:
+                error_message = f"Required tool '{tool_name}' not found in coral_tools. Please ensure that while adding the agent on Coral Studio, you include the tool from Custom Tools."
+                logger.error(error_message)
+                raise ValueError(error_message)        
+        agent_tools = required_tools
+
+    else:
+        agent_tools = [
+            Tool(
+                name="ask_human",
+                func=None,
+                coroutine=ask_human_tool,
+                description="Ask the user a question and wait for a response."
+            )
+        ]
+    
+    agent_executor = await create_agent(coral_tools, agent_tools, runtime)
+
+    while True:
         try:
-            client = MultiServerMCPClient(
-                connections={
-                    "coral": {
-                        "transport": "sse",
-                        "url": MCP_SERVER_URL,
-                        "timeout": 600,
-                        "sse_read_timeout": 600,
-                    }
-                }
-            )
-            logger.info(f"Initialized MultiServerMCPClient to {MCP_SERVER_URL}")
-
-            tools = await client.get_tools()
-
-            tools.append(
-                Tool(
-                    name="ask_human",
-                    func=None,
-                    coroutine=ask_human_tool,
-                    description="Ask the user a question and wait for a response."
-                )
-            )
-            logger.info(f"Tools Description:\n{get_tools_description(tools)}")
-
-            # with get_openai_callback() as cb:
-            agent_executor = await create_interface_agent(client, tools)
-            await agent_executor.ainvoke({})
-                # logger.info("Token usage:")
-                # logger.info(f"  Prompt Tokens: {cb.prompt_tokens}")
-                # logger.info(f"  Completion Tokens: {cb.completion_tokens}")
-                # logger.info(f"  Total Tokens: {cb.total_tokens}")
-                # logger.info(f"  Total Cost (USD): ${cb.total_cost:.6f}")
-
-
-        except ClosedResourceError as e:
-            logger.error(f"ClosedResourceError on attempt {attempt + 1}: {e}")
-            if attempt < max_retries - 1:
-                logger.info(f"Retrying in {retry_delay} seconds...")
-                await asyncio.sleep(retry_delay)
-                continue
-            else:
-                logger.error("Max retries reached. Exiting.")
-                raise
-
+            logger.info("Starting new agent invocation")
+            await agent_executor.ainvoke({"agent_scratchpad": []})
+            logger.info("Completed agent invocation, restarting loop")
+            await asyncio.sleep(1)
         except Exception as e:
-            logger.error(f"Unexpected error on attempt {attempt + 1}: {e}")
-            if attempt < max_retries - 1:
-                logger.info(f"Retrying in {retry_delay} seconds...")
-                await asyncio.sleep(retry_delay)
-                continue
-            else:
-                logger.error("Max retries reached. Exiting.")
-                raise
+            logger.error(f"Error in agent loop: {str(e)}")
+            logger.error(traceback.format_exc())
+            await asyncio.sleep(5)
 
 if __name__ == "__main__":
     asyncio.run(main())
-
