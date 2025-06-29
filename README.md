@@ -36,10 +36,10 @@ uv sync
 
 ### 2. Configure Environment Variables
 
-<details>
- 
 Get the API Key:
 [OpenAI](https://platform.openai.com/api-keys) or [GROQ](https://console.groq.com/keys)
+
+<details>
 
 ```bash
 # Create .env file in project root
