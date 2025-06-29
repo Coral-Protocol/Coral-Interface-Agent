@@ -113,7 +113,7 @@ Ensure that the [Coral Server](https://github.com/Coral-Protocol/coral-server) i
 
 ```bash
 # Run the agent using `uv`:
-uv run python 0-langchain-interface.py
+uv run python main.py
 ```
 </details>
 
