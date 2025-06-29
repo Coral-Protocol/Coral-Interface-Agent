@@ -12,9 +12,57 @@ User Interaction Agent acts as the main interface for coordinating user instruct
 - **Date added**: June 4, 2025
 - **License**: MIT
 
-## Use the Agent in Orchestration
+## Setup the Agent
 
-### 1. Executable Agent Definition
+### 1. Clone & Install Dependencies
+
+<details>  
+
+Ensure that the [Coral Server](https://github.com/Coral-Protocol/coral-server) is running on your system. If you are trying to run Interface agent and require coordination with other agents, you can run additional agents that communicate on the coral server.
+
+```bash
+# In a new terminal clone the repository:
+git clone https://github.com/Coral-Protocol/Coral-Interface-Agent.git
+
+# Navigate to the project directory:
+cd Coral-Interface-Agent
+
+# Install `uv`:
+pip install uv
+
+# Install dependencies from `pyproject.toml` using `uv`:
+uv sync
+```
+
+</details>
+
+### 2. Configure Environment Variables
+
+<details>
+ 
+Get the API Key:
+[OpenAI](https://platform.openai.com/api-keys)
+
+
+```bash
+# Create .env file in project root
+cp -r .env_sample .env
+```
+</details>
+
+## Run the Agent
+ 
+### 1. Dev Mode
+
+<details>
+
+```bash
+# Run the agent using `uv`:
+uv run python 0-langchain-interface.py
+```
+</details>
+
+### 2. Executable Mode
 
 <details>
 
@@ -40,15 +88,19 @@ registry:
         description: "API key for the service"
     runtime:
       type: "executable"
-      command: ["bash", "-c", "${PROJECT_DIR}/run_agent.sh main.py"]
-      
+      command: ["bash", "-c", "/home/suman/projects/coral_protocol/agents/Coral-Interface-Agent/run_agent.sh main.py"]
       environment:
         - name: "API_KEY"
           from: "API_KEY"
-        - name: "MODEL"
+        - name: "MODEL_NAME"
           value: "gpt-4.1"
-        - name: "LLM_MODEL_PROVIDER"
+        - name: "MODEL_PROVIDER"
           value: "openai"
+        - name: "MODEL_TOKEN"
+          value: "16000"
+        - name: "MODEL_TEMPERATURE"
+          value: "0.3"
+          
 ```
 
 For Windows, create a powershell command and run:
@@ -59,59 +111,8 @@ command: ["powershell","-ExecutionPolicy", "Bypass", "-File", "${PROJECT_DIR}/ru
 
 </details>
 
-## Use the Agent in Dev Mode
 
-### 1. Clone & Install Dependencies
-
-
-<details>  
-
-Ensure that the [Coral Server](https://github.com/Coral-Protocol/coral-server) is running on your system. If you are trying to run Interface agent and require coordination with other agents, you can run additional agents that communicate on the coral server.
-
-```bash
-# In a new terminal clone the repository:
-git clone https://github.com/Coral-Protocol/Coral-Interface-Agent.git
-
-# Navigate to the project directory:
-cd Coral-Interface-Agent
-
-# Install `uv`:
-pip install uv
-
-# Install dependencies from `pyproject.toml` using `uv`:
-uv sync
-```
-
-</details>
- 
-
-### 2. Configure Environment Variables
-
-<details>
- 
-Get the API Key:
-[OpenAI](https://platform.openai.com/api-keys)
-
-
-```bash
-# Create .env file in project root
-cp -r .env_sample .env
-```
-</details>
-
-
-### 3. Run Agent
-
-<details>
-
-```bash
-# Run the agent using `uv`:
-uv run python 0-langchain-interface.py
-```
-</details>
-
-
-### 4. Example
+## Example
 
 <details>
 
