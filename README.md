@@ -48,20 +48,13 @@ cp -r .env_sample .env
 </details>
 
 ## Run the Agent
- 
-### 1. Dev Mode
 
-Ensure that the [Coral Server](https://github.com/Coral-Protocol/coral-server) is running on your system and run below command in a separate terminal.
+You can run in either of the below modes to get your system running.  
 
-<details>
+- The Executable Model is part of the Coral Protocol Orchestrator which works with Coral Studio UI.  
+- The Dev Mode allows the Coral Server and all agents to be seaprately running on each terminal without UI support.  
 
-```bash
-# Run the agent using `uv`:
-uv run python 0-langchain-interface.py
-```
-</details>
-
-### 2. Executable Mode
+### 1. Executable Mode
 
 Update the file: "coral-server/src/main/resources/application.yaml" with below details.
 
@@ -110,6 +103,18 @@ For Windows, create a powershell command (run_agent.ps1) and run:
 command: ["powershell","-ExecutionPolicy", "Bypass", "-File", "${PROJECT_DIR}/run_agent.ps1","main.py"]
 ```
 
+</details>
+
+### 2. Dev Mode
+
+Ensure that the [Coral Server](https://github.com/Coral-Protocol/coral-server) is running on your system and run below command in a separate terminal.
+
+<details>
+
+```bash
+# Run the agent using `uv`:
+uv run python 0-langchain-interface.py
+```
 </details>
 
 
