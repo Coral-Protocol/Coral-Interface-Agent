@@ -56,7 +56,7 @@ You can run in either of the below modes to get your system running.
 
 ### 1. Executable Mode
 
-Update the file: "coral-server/src/main/resources/application.yaml" with below details.
+Update the file: "coral-server/src/main/resources/application.yaml" with below details. You do not need to setup the .env in project directory for running in this mode, it will be captured thorugh variables below.
 
 <details>
 
