@@ -51,12 +51,12 @@ cp -r .env_sample .env
 
 You can run in either of the below modes to get your system running.  
 
-- The Executable Model is part of the Coral Protocol Orchestrator which works with Coral Studio UI.  
+- The Executable Model is part of the Coral Protocol Orchestrator which works with [Coral Studio UI](https://github.com/Coral-Protocol/coral-studio).  
 - The Dev Mode allows the Coral Server and all agents to be seaprately running on each terminal without UI support.  
 
 ### 1. Executable Mode
 
-Update the file: "coral-server/src/main/resources/application.yaml" with below details and run the [Coral Server](https://github.com/Coral-Protocol/coral-server). You do not need to setup the .env in project directory for running in this mode, it will be captured thorugh variables below.
+Checkout: [How to Build a Multi-Agent System with Awesome Open Source Agents using Coral Protocol](https://github.com/Coral-Protocol/existing-agent-sessions-tutorial-private-temp) and update the file: "coral-server/src/main/resources/application.yaml" with below details and run the [Coral Server](https://github.com/Coral-Protocol/coral-server). You do not need to setup the .env in project directory for running in this mode, it will be captured thorugh variables below.
 
 <details>
 
