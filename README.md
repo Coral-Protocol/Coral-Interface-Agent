@@ -8,7 +8,7 @@ User Interaction Agent acts as the main interface for coordinating user instruct
 ## Details
 - **Framework**: LangChain
 - **Tools used**: Coral MCP Tools, ask_human Tool (human-in-the-loop)
-- **AI model**: GPT-4.1
+- **AI model**: GPT-4.1, GROQ-llama-3.3-70b
 - **Date added**: June 4, 2025
 - **License**: MIT
 
@@ -17,8 +17,6 @@ User Interaction Agent acts as the main interface for coordinating user instruct
 ### 1. Clone & Install Dependencies
 
 <details>  
-
-Ensure that the [Coral Server](https://github.com/Coral-Protocol/coral-server) is running on your system. If you are trying to run Interface agent and require coordination with other agents, you can run additional agents that communicate on the coral server.
 
 ```bash
 # In a new terminal clone the repository:
@@ -41,8 +39,7 @@ uv sync
 <details>
  
 Get the API Key:
-[OpenAI](https://platform.openai.com/api-keys)
-
+[OpenAI](https://platform.openai.com/api-keys) or [GROQ](https://console.groq.com/keys)
 
 ```bash
 # Create .env file in project root
@@ -54,6 +51,8 @@ cp -r .env_sample .env
  
 ### 1. Dev Mode
 
+Ensure that the [Coral Server](https://github.com/Coral-Protocol/coral-server) is running on your system and run below command in a separate terminal.
+
 <details>
 
 ```bash
@@ -63,6 +62,8 @@ uv run python 0-langchain-interface.py
 </details>
 
 ### 2. Executable Mode
+
+Update the file: "coral-server/src/main/resources/application.yaml" with below details.
 
 <details>
 
@@ -88,7 +89,7 @@ registry:
         description: "API key for the service"
     runtime:
       type: "executable"
-      command: ["bash", "-c", "/home/suman/projects/coral_protocol/agents/Coral-Interface-Agent/run_agent.sh main.py"]
+      command: ["bash", "-c", "${PROJECT_DIR}/run_agent.sh main.py"]
       environment:
         - name: "API_KEY"
           from: "API_KEY"
@@ -100,10 +101,10 @@ registry:
           value: "16000"
         - name: "MODEL_TEMPERATURE"
           value: "0.3"
-          
+
 ```
 
-For Windows, create a powershell command and run:
+For Windows, create a powershell command (run_agent.ps1) and run:
 
 ```bash
 command: ["powershell","-ExecutionPolicy", "Bypass", "-File", "${PROJECT_DIR}/run_agent.ps1","main.py"]
