@@ -32,7 +32,10 @@ curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=$(pwd) sh
 uv venv .venv
 
 # Activate the virtual environment
-source .venv/bin/activate 
+source .venv/bin/activate
+
+# install uv
+pip install uv
 
 # Install dependencies from `pyproject.toml` using `uv`:
 uv sync
