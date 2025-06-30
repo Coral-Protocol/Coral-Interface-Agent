@@ -25,8 +25,14 @@ git clone https://github.com/Coral-Protocol/Coral-Interface-Agent.git
 # Navigate to the project directory:
 cd Coral-Interface-Agent
 
-# Install `uv`:
-pip install uv
+# Download and run the UV installer, setting the installation directory to the current one
+curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=$(pwd) sh
+
+# Create a virtual environment named `.venv` using UV
+uv venv .venv
+
+# Activate the virtual environment
+source .venv/bin/activate 
 
 # Install dependencies from `pyproject.toml` using `uv`:
 uv sync
