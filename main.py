@@ -44,22 +44,24 @@ async def create_agent(coral_tools, agent_tools, runtime):
         ]
         agent_tools_description = get_tools_description(agent_tools_for_description)
         combined_tools = coral_tools + agent_tools_for_description
-        user_interaction_tool = "request_question"
+        user_request_tool = "request_question"
+        user_answer_tool = "answer_question"
         print(agent_tools_description)
     else:
         # For other runtimes (e.g., devmode), agent_tools is a list of Tool objects
         agent_tools_description = get_tools_description(agent_tools)
         combined_tools = coral_tools + agent_tools
-        user_interaction_tool = "ask_human"
+        user_request_tool = "ask_human"
+        user_answer_tool = "ask_human"
 
     prompt = ChatPromptTemplate.from_messages([
         (
             "system",
-            f"""You are an agent interacting with the tools from Coral Server and using your own `{user_interaction_tool}` tool to communicate with the user. **You MUST NEVER finish the chain**
+            f"""You are an agent interacting with the tools from Coral Server and using your own `{user_request_tool}` and `{user_answer_tool}` tool to communicate with the user. **You MUST NEVER finish the chain**
 
             Follow these steps in order:
             1. Use `list_agents` to list all connected agents and get their descriptions.
-            2. Use tool `{user_interaction_tool}` to ask: "How can I assist you today?" and wait for the response.
+            2. Use tool `{user_request_tool}` to ask: "How can I assist you today?" and wait for the response.
             3. Understand the user's intent and decide which agent(s) are needed based on their descriptions.
             4. If the user requests Coral Server information (e.g., agent status, connection info), use your tools to retrieve and return the information directly to the user, then go back to Step 1.
             5. If fulfilling the request requires multiple agents, then call
@@ -71,11 +73,15 @@ async def create_agent(coral_tools, agent_tools, runtime):
             * Use `wait_for_mentions(timeoutMs=60000)` to receive the agent's response up to 5 times if no message received.
             * Record and store the response for final presentation.
             7. After all required agents have responded, think about the content to ensure you have executed the instruction to the best of your ability and the tools. Make this your response as "answer".
-            8. Always respond back to the user by calling `{user_interaction_tool}` with the "answer" or error occurred even if you have no answer or error.
+            8. Always respond back to the user by calling `{user_answer_tool}` with the "answer" or error occurred even if you have no answer or error.
             9. Repeat the process from Step 1.
+
+            **You MUST NEVER finish the chain**
             
             These are the list of coral tools: {coral_tools_description}
-            These are the list of agent tools: {agent_tools_description}"""
+            These are the list of agent tools: {agent_tools_description}
+
+            **You MUST NEVER finish the chain**"""
         ),
         ("placeholder", "{agent_scratchpad}")
     ])
