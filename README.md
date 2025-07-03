@@ -61,7 +61,7 @@ cp -r .env_sample .env
 You can run in either of the below modes to get your system running.  
 
 - The Executable Model is part of the Coral Protocol Orchestrator which works with [Coral Studio UI](https://github.com/Coral-Protocol/coral-studio).  
-- The Dev Mode allows the Coral Server and all agents to be seaprately running on each terminal without UI support.  
+- The Dev Mode allows the Coral Server and all agents to be seperately running on each terminal without UI support.  
 
 ### 1. Executable Mode
 
@@ -124,6 +124,9 @@ Ensure that the [Coral Server](https://github.com/Coral-Protocol/coral-server) i
 # Run the agent using `uv`:
 uv run python main.py
 ```
+
+You can view the agents running in Dev Mode using the [Coral Studio UI](https://github.com/Coral-Protocol/coral-studio) by running it separately in a new terminal.
+
 </details>
 
 
