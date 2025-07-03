@@ -84,7 +84,7 @@ applications:
       - "priv"
 
 registry:
-  interface:
+  interface_agent:
     options:
       - name: "API_KEY"
         type: "string"
