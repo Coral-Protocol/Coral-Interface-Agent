@@ -12,18 +12,6 @@ import traceback
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-load_dotenv()
-
-base_url = os.getenv("CORAL_SSE_URL")
-agentID = os.getenv("CORAL_AGENT_ID")
-
-coral_params = {
-    "agentId": agentID,
-    "agentDescription": "An agent that takes the user's input and interacts with other agents to fulfill the request"
-}
-
-query_string = urllib.parse.urlencode(coral_params)
-
 def get_tools_description(tools):
     return "\n".join(
         f"Tool: {tool.name}, Schema: {json.dumps(tool.args).replace('{', '{{').replace('}', '}}')}"
@@ -98,6 +86,23 @@ async def create_agent(coral_tools, agent_tools, runtime):
     return AgentExecutor(agent=agent, tools=combined_tools, verbose=True)
 
 async def main():
+    runtime = os.getenv("CORAL_ORCHESTRATION_RUNTIME", "devmode")
+
+    if runtime == "docker" or runtime == "executable":
+        base_url = os.getenv("CORAL_SSE_URL")
+        agentID = os.getenv("CORAL_AGENT_ID")
+    else:
+        load_dotenv()
+        base_url = os.getenv("CORAL_SSE_URL")
+        agentID = os.getenv("CORAL_AGENT_ID")
+
+    coral_params = {
+        "agentId": agentID,
+        "agentDescription": "An agent that takes the user's input and interacts with other agents to fulfill the request"
+    }
+
+    query_string = urllib.parse.urlencode(coral_params)
+
     CORAL_SERVER_URL = f"{base_url}?{query_string}"
     logger.info(f"Connecting to Coral Server: {CORAL_SERVER_URL}")
 
@@ -115,8 +120,6 @@ async def main():
 
     coral_tools = await client.get_tools(server_name="coral")
     logger.info(f"Coral tools count: {len(coral_tools)}")
-
-    runtime = os.getenv("CORAL_ORCHESTRATION_RUNTIME", "devmode")
     
     if runtime == "docker" or runtime == "executable":
         required_tools = ["request-question", "answer-question"]
