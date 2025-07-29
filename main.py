@@ -36,7 +36,7 @@ def load_config() -> Dict[str, Any]:
         "model_provider": os.getenv("MODEL_PROVIDER"),
         "api_key": os.getenv("MODEL_API_KEY"),
         "model_temperature": float(os.getenv("MODEL_TEMPERATURE", DEFAULT_TEMPERATURE)),
-        "model_token": int(os.getenv("MODEL_TOKEN", DEFAULT_MAX_TOKENS)),
+        "model_token": int(os.getenv("MODEL_TOKEN_LIMIT", DEFAULT_MAX_TOKENS)),
         "base_url": os.getenv("BASE_URL")
     }
     
