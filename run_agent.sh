@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Check for exactly one argument
 if [ $# -ne 1 ]; then
@@ -31,7 +31,7 @@ echo "Activating virtual environment..."
 VENV_ACTIVATE="$([[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" || "$OSTYPE" == "cygwin" ]] && echo "$PROJECT_DIR/.venv/Scripts/activate" || echo "$PROJECT_DIR/.venv/bin/activate")"
 [ ! -f "$VENV_ACTIVATE" ] && { echo "Error: Virtual environment activation script $VENV_ACTIVATE not found" >&2; exit 1; }
 source "$VENV_ACTIVATE" || { echo "Error: Failed to activate virtual environment" >&2; exit 1; }
- 
+
 # Run Python script
 echo "Running $PYTHON_SCRIPT..."
 uv run "$PYTHON_SCRIPT" || { echo "Error: Failed to run $PYTHON_SCRIPT" >&2; exit 1; }
