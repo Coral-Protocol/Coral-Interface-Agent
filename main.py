@@ -34,7 +34,7 @@ def load_config() -> Dict[str, Any]:
         "agent_id": os.getenv("CORAL_AGENT_ID"),
         "model_name": os.getenv("MODEL_NAME"),
         "model_provider": os.getenv("MODEL_PROVIDER"),
-        "api_key": os.getenv("API_KEY"),
+        "api_key": os.getenv("MODEL_API_KEY"),
         "model_temperature": float(os.getenv("MODEL_TEMPERATURE", DEFAULT_TEMPERATURE)),
         "model_token": int(os.getenv("MODEL_TOKEN", DEFAULT_MAX_TOKENS)),
         "base_url": os.getenv("BASE_URL")
@@ -132,7 +132,7 @@ async def create_agent(coral_tools: List[Any], runtime: str) -> AgentExecutor:
     model = init_chat_model(
         model=os.getenv("MODEL_NAME"),
         model_provider=os.getenv("MODEL_PROVIDER"),
-        api_key=os.getenv("API_KEY"),
+        api_key=os.getenv("MODEL_API_KEY"),
         temperature=float(os.getenv("MODEL_TEMPERATURE", DEFAULT_TEMPERATURE)),
         max_tokens=int(os.getenv("MODEL_TOKEN", DEFAULT_MAX_TOKENS)),
         base_url=os.getenv("BASE_URL") if os.getenv("BASE_URL") else None
