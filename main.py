@@ -10,9 +10,6 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain.agents import create_tool_calling_agent, AgentExecutor
 
-DOCKER_RUNTIME = "docker"
-EXECUTABLE_RUNTIME = "executable"
-DEVMODE_RUNTIME = "devmode"
 REQUEST_QUESTION_TOOL = "request-question"
 ANSWER_QUESTION_TOOL = "answer-question"
 MAX_CHAT_HISTORY = 3
@@ -25,11 +22,12 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 def load_config() -> Dict[str, Any]:
-    if os.getenv("CORAL_ORCHESTRATION_RUNTIME") not in (DOCKER_RUNTIME, EXECUTABLE_RUNTIME):
+    runtime = os.getenv("CORAL_ORCHESTRATION_RUNTIME", None)
+    if runtime is None:
         load_dotenv()
     
     config = {
-        "runtime": os.getenv("CORAL_ORCHESTRATION_RUNTIME", DEVMODE_RUNTIME),
+        "runtime": os.getenv("CORAL_ORCHESTRATION_RUNTIME", None),
         "coral_sse_url": os.getenv("CORAL_SSE_URL"),
         "agent_id": os.getenv("CORAL_AGENT_ID"),
         "model_name": os.getenv("MODEL_NAME"),
@@ -70,7 +68,7 @@ def format_chat_history(chat_history: List[Dict[str, str]]) -> str:
     return history_str
 
 async def get_user_input(runtime: str, agent_tools: Dict[str, Any]) -> str:
-    if runtime in (DOCKER_RUNTIME, EXECUTABLE_RUNTIME):
+    if runtime is not None:
         try:
             user_input = await agent_tools[REQUEST_QUESTION_TOOL].ainvoke({
                 "message": "How can I assist you today? "
@@ -88,7 +86,7 @@ async def get_user_input(runtime: str, agent_tools: Dict[str, Any]) -> str:
 
 async def send_response(runtime: str, agent_tools: Dict[str, Any], response: str) -> None:
     logger.info(f"Agent response: {response}")
-    if runtime in (DOCKER_RUNTIME, EXECUTABLE_RUNTIME):
+    if runtime is not None:
         try:
             await agent_tools[ANSWER_QUESTION_TOOL].ainvoke({
                 "response": response
@@ -97,7 +95,7 @@ async def send_response(runtime: str, agent_tools: Dict[str, Any], response: str
             logger.error(f"Error invoking answer_question tool: {str(e)}")
             raise
 
-async def create_agent(coral_tools: List[Any], runtime: str) -> AgentExecutor:
+async def create_agent(coral_tools: List[Any]) -> AgentExecutor:
     coral_tools_description = get_tools_description(coral_tools)
     
     prompt = ChatPromptTemplate.from_messages([
@@ -106,7 +104,7 @@ async def create_agent(coral_tools: List[Any], runtime: str) -> AgentExecutor:
             f"""Your primary role is to plan tasks sent by the user and send clear instructions to other agents to execute them, focusing solely on questions about the Coral Server, its tools: {coral_tools_description}, and registered agents. 
             Always use {{chat_history}} to understand the context of the question along with the user's instructions. 
             Think carefully about the question, analyze its intent, and create a detailed plan to address it, considering the roles and capabilities of available agents, description and their tools. 
-            If the context is unclear or the question is unrelated to Coral Server, respond with: "I'm sorry, I can only answer questions about the Coral Server, its tools, and registered agents. Please ask a relevant question or clarify."
+            Only if you can't do above respond with: "I'm sorry, I can only answer questions about the Coral Server, its tools, and registered agents. Please ask a relevant question or clarify."
 
             Follow the steps in order:
             1. Call list_agents to get all connected agents and their descriptions.
@@ -134,8 +132,8 @@ async def create_agent(coral_tools: List[Any], runtime: str) -> AgentExecutor:
         model_provider=os.getenv("MODEL_PROVIDER"),
         api_key=os.getenv("MODEL_API_KEY"),
         temperature=float(os.getenv("MODEL_TEMPERATURE", DEFAULT_TEMPERATURE)),
-        max_tokens=int(os.getenv("MODEL_TOKEN", DEFAULT_MAX_TOKENS)),
-        base_url=os.getenv("BASE_URL") if os.getenv("BASE_URL") else None
+        max_tokens=int(os.getenv("MODEL_MAX_TOKENS", DEFAULT_MAX_TOKENS)),
+        base_url=os.getenv("MODEL_BASE_URL") if os.getenv("BASE_URL") else None
     )
 
     agent = create_tool_calling_agent(model, coral_tools, prompt)
@@ -170,7 +168,7 @@ async def main():
         coral_tools = await client.get_tools(server_name="coral")
         logger.info(f"Retrieved {len(coral_tools)} coral tools")
 
-        if config["runtime"] in (DOCKER_RUNTIME, EXECUTABLE_RUNTIME):
+        if config["runtime"] is not None:
             required_tools = [REQUEST_QUESTION_TOOL, ANSWER_QUESTION_TOOL]
             available_tools = [tool.name for tool in coral_tools]
             for tool_name in required_tools:
@@ -181,7 +179,7 @@ async def main():
         
         agent_tools = {tool.name: tool for tool in coral_tools}
         
-        agent_executor = await create_agent(coral_tools, config["runtime"])
+        agent_executor = await create_agent(coral_tools)
         logger.info("Agent executor created")
 
         chat_history: List[Dict[str, str]] = []
