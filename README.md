@@ -99,7 +99,7 @@ registry:
 
     runtime:
       type: "executable"
-      command: ["bash", "-c", "/home/suman/projects/coral_protocol/software_agents/Coral-Interface-Agent/run_agent.sh main.py"]
+      command: ["bash", "-c", "<replace with path to this agent>/run_agent.sh main.py"]
       environment:
         - option: "MODEL_API_KEY"
         - option: "MODEL_NAME"
