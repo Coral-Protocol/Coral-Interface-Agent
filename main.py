@@ -133,7 +133,7 @@ async def create_agent(coral_tools: List[Any]) -> AgentExecutor:
         api_key=os.getenv("MODEL_API_KEY"),
         temperature=float(os.getenv("MODEL_TEMPERATURE", DEFAULT_TEMPERATURE)),
         max_tokens=int(os.getenv("MODEL_MAX_TOKENS", DEFAULT_MAX_TOKENS)),
-        base_url=os.getenv("MODEL_BASE_URL") if os.getenv("BASE_URL") else None
+        base_url=os.getenv("MODEL_BASE_URL", None)
     )
 
     agent = create_tool_calling_agent(model, coral_tools, prompt)
