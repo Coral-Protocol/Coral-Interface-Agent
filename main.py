@@ -9,9 +9,12 @@ from langchain.chat_models import init_chat_model
 from langchain.prompts import ChatPromptTemplate
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain.agents import create_tool_calling_agent, AgentExecutor
+from inputimeout import inputimeout, TimeoutOccurred
+
 
 REQUEST_QUESTION_TOOL = "request-question"
 ANSWER_QUESTION_TOOL = "answer-question"
+WAIT_FOR_MENTIONS_TOOL = "wait-for-mentions"
 MAX_CHAT_HISTORY = 3
 DEFAULT_TEMPERATURE = 0.0
 DEFAULT_MAX_TOKENS = 8000
@@ -67,20 +70,36 @@ def format_chat_history(chat_history: List[Dict[str, str]]) -> str:
         history_str += f"Agent: {chat['response']}\n\n"
     return history_str
 
-async def get_user_input(runtime: str, agent_tools: Dict[str, Any]) -> str:
+async def get_user_input(runtime: str | None, agent_tools: Dict[str, Any]) -> str:
+    user_input = None
+
     if runtime is not None:
         try:
-            user_input = await agent_tools[REQUEST_QUESTION_TOOL].ainvoke({
-                "message": "How can I assist you today? "
-            })
+            logger.info(f"Waiting for user input from STUDIO (runtime: {runtime})...")
+            user_input = await asyncio.wait_for(
+                agent_tools[REQUEST_QUESTION_TOOL].ainvoke({
+                    "message": "How can I assist you today?"
+                }),
+                timeout=30
+            )
         except Exception as e:
-            logger.error(f"Error invoking request_question tool: {str(e)}")
-            raise
+            logger.error(f"No input received...")
+
     else:
-        user_input = input("How can I assist you today? ").strip()
-        if not user_input:
-            user_input = "No input provided"
-    
+        try:
+            logger.info("Waiting for user input from TERMINAL...")
+            user_input = inputimeout(prompt='How can I assist you today? ', timeout=30).strip()
+        except Exception as e:
+            logger.error(f"No input received...")
+
+    if user_input is None:
+        try:
+            logger.info("Calling Wait For Mentions...")
+            user_input = await agent_tools['wait_for_mentions'].ainvoke({"timeoutMs": 10000})
+        except (Exception, asyncio.TimeoutError) as e:
+            logger.error(f"Error in {WAIT_FOR_MENTIONS_TOOL}: {str(e)}")
+            user_input = "no new messages"
+
     logger.info(f"User input: {user_input}")
     return user_input
 
@@ -187,6 +206,8 @@ async def main():
         while True:
             try:
                 user_input = await get_user_input(config["runtime"], agent_tools)
+                if not user_input or "no new messages" in str(user_input).lower():
+                    continue
                 
                 formatted_history = format_chat_history(chat_history)                
                 result = await agent_executor.ainvoke({
