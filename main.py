@@ -152,7 +152,7 @@ async def main():
         coral_server_url = f"{config['coral_sse_url']}?{query_string}"
         logger.info(f"Connecting to Coral Server: {coral_server_url}")
 
-        timeout = os.getenv("TIMEOUT_MS", 300)
+        timeout = float(os.getenv("TIMEOUT_MS", "30000"))
         client = MultiServerMCPClient(
             connections={
                 "coral": {
