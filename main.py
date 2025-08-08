@@ -104,7 +104,6 @@ async def create_agent(coral_tools: List[Any]) -> AgentExecutor:
             f"""Your primary role is to plan tasks sent by the user and send clear instructions to other agents to execute them, focusing solely on questions about the Coral Server, its tools: {coral_tools_description}, and registered agents. 
             Always use {{chat_history}} to understand the context of the question along with the user's instructions. 
             Think carefully about the question, analyze its intent, and create a detailed plan to address it, considering the roles and capabilities of available agents, description and their tools. 
-            Only if you can't do above respond with: "I'm sorry, I can only answer questions about the Coral Server, its tools, and registered agents. Please ask a relevant question or clarify."
 
             Follow the steps in order:
             1. Call list_agents to get all connected agents and their descriptions.
