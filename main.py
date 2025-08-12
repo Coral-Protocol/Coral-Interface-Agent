@@ -33,6 +33,7 @@ def load_config() -> Dict[str, Any]:
         "runtime": os.getenv("CORAL_ORCHESTRATION_RUNTIME", None),
         "coral_sse_url": os.getenv("CORAL_SSE_URL"),
         "agent_id": os.getenv("CORAL_AGENT_ID"),
+        "coral_prompt_system": os.getenv("CORAL_PROMPT_SYSTEM", default = ""),
         "model_name": os.getenv("MODEL_NAME"),
         "model_provider": os.getenv("MODEL_PROVIDER"),
         "api_key": os.getenv("MODEL_API_KEY"),
@@ -80,7 +81,7 @@ async def get_user_input(runtime: str | None, agent_tools: Dict[str, Any]) -> st
                 agent_tools[REQUEST_QUESTION_TOOL].ainvoke({
                     "message": "How can I assist you today?"
                 }),
-                timeout=30
+                timeout=120
             )
         except Exception as e:
             logger.error(f"No input received...")
@@ -88,7 +89,7 @@ async def get_user_input(runtime: str | None, agent_tools: Dict[str, Any]) -> st
     else:
         try:
             logger.info("Waiting for user input from TERMINAL...")
-            user_input = inputimeout(prompt='How can I assist you today? ', timeout=30).strip()
+            user_input = inputimeout(prompt='How can I assist you today? ', timeout=120).strip()
         except Exception as e:
             logger.error(f"No input received...")
 
