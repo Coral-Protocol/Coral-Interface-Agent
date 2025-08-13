@@ -42,9 +42,8 @@ async def create_agent(coral_tools, agent_tools):
             
             {coral_prompt_system}
             
-            {tool_guidelines}
-            
             Here are the guidelines for using the communication tools:
+            {tool_guidelines}
             """
         ),
         ("placeholder", "{agent_scratchpad}")
