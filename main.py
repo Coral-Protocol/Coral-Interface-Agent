@@ -26,7 +26,7 @@ async def ask_human_tool(question: str) -> str:
 async def create_agent(coral_tools, agent_tools, runtime):
     coral_tools_description = get_tools_description(coral_tools)
     
-    if runtime == "docker" or runtime == "executable":
+    if runtime is not None:
         agent_tools_for_description = [
             tool for tool in coral_tools if tool.name in agent_tools
         ]
@@ -54,17 +54,16 @@ async def create_agent(coral_tools, agent_tools, runtime):
             4. If the user requests Coral Server information (e.g., agent status, connection info), use your tools to retrieve and return the information directly to the user, then go back to Step 1.
             5. If fulfilling the request requires multiple agents, then call
             `create_thread ('threadName': , 'participantIds': [ID of all required agents, including yourself])` to create conversation thread.
-            6. Add both context7 and coding agent to the same thread(create_thread) using 'add_participant'.
-            7. For each selected agent:
+            6. For each selected agent:
             * **If the required agent is not in the thread, add it by calling `add_participant(threadId=..., 'participantIds': ID of the agent to add)`.**
             * Construct a clear instruction message for the agent.
             * Use **`send_message(threadId=..., content="instruction", mentions=[Receive Agent Id])`.** (NEVER leave `mentions` as empty)
             * Use `wait_for_mentions(timeoutMs=60000)` to receive the agent's response up to 5 times if no message received.
             * Record and store the response for final presentation.
-            8. After all required agents have responded, think about the content to ensure you have executed the instruction to the best of your ability and the tools. Make this your response as "answer".
-            9. Always respond back to the user by calling `{user_answer_tool}` with the "answer" or error occurred even if you have no answer or error.
-            10. Always send user query to the context7 agent and whatever response you receive from the context7 agent, should be sent to the coding agent as well.
-            11. Repeat the process from Step 1.
+            7. After all required agents have responded, think about the content to ensure you have executed the instruction to the best of your ability and the tools. Make this your response as "answer".
+            8. Always respond back to the user by calling `{user_answer_tool}` with the "answer" or error occurred even if you have no answer or error.
+            9. Always send user query to the context7 agent and whatever response you receive from the context7 agent, should be sent to the coding agent as well.
+            10. Repeat the process from Step 1.
 
             **You MUST NEVER finish the chain**
             
@@ -121,7 +120,7 @@ async def main():
     coral_tools = await client.get_tools(server_name="coral")
     logger.info(f"Coral tools count: {len(coral_tools)}")
     
-    if runtime == "docker" or runtime == "executable":
+    if runtime is not None:
         required_tools = ["request-question", "answer-question"]
         available_tools = [tool.name for tool in coral_tools]
 
